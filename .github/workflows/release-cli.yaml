@@ -61,6 +61,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     steps:
+      # Checkout with full history so we can generate path-scoped release notes.
+      # GitHub's --generate-notes includes ALL commits since the last tag regardless
+      # of path, which would pollute CLI releases with unrelated MCP server changes.
+      # Instead we use git log filtered to skills/cli/ for accurate changelogs.
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
       - name: Parse version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#cli/}" >> "$GITHUB_OUTPUT"
@@ -74,6 +83,20 @@ jobs:
       - name: Generate checksums
         run: sha256sum shs_*.tar.gz > checksums_sha256.txt
 
+      - name: Generate release notes
+        run: |
+          PREV_TAG=$(git tag --list 'cli/v*' --sort=-v:refname | sed -n '2p')
+          if [ -n "$PREV_TAG" ]; then
+            RANGE="${PREV_TAG}..${GITHUB_REF_NAME}"
+          else
+            RANGE="${GITHUB_REF_NAME}"
+          fi
+          echo "## What's Changed" > notes.md
+          git log "$RANGE" --oneline -- skills/cli/ >> notes.md
+          if [ ! -s notes.md ] || [ "$(wc -l < notes.md)" -eq 1 ]; then
+            echo "No CLI-specific changes found in this range." >> notes.md
+          fi
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -81,5 +104,5 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" \
             --title "SHS CLI ${{ steps.version.outputs.version }}" \
-            --generate-notes \
+            --notes-file notes.md \
             shs_*.tar.gz checksums_sha256.txt
