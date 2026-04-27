@@ -1,5 +1,5 @@
 # Spark History Server CLI (`shs`)
-
+k
 > **What is a skill?** This project's primary interface is an [MCP server](../../README.md) that AI agents use to analyze Spark applications via the Model Context Protocol. A **skill** is a complementary capability built alongside the MCP server — a different interface for the same underlying data. The CLI (`shs`) is the first skill: a standalone binary that queries the same Spark History Server REST API directly from the terminal, with no MCP protocol, no AI framework, and no running server process.
 
 `shs` is a command-line tool for [Apache Spark History Server](https://spark.apache.org/docs/latest/monitoring.html#viewing-after-the-fact). It lets platform engineers, SREs, data engineers, and coding agents inspect Spark applications, investigate job failures, analyze stage performance, and compare runs — all from the terminal or a shell script.
