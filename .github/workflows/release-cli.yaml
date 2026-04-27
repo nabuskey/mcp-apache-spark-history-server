@@ -49,13 +49,13 @@ jobs:
 
       - name: Archive
         working-directory: skills/cli
-        run: tar czf "shs_${{ steps.version.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz" shs
+        run: tar czf "shs-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" shs
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: shs_${{ steps.version.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: skills/cli/shs_${{ steps.version.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz
+          name: shs-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: skills/cli/shs-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
 
   release:
     needs: build
@@ -78,11 +78,11 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          pattern: shs_${{ steps.version.outputs.version }}_*
+          pattern: shs-${{ steps.version.outputs.version }}-*
           merge-multiple: true
 
       - name: Generate checksums
-        run: sha256sum shs_*.tar.gz > checksums_sha256.txt
+        run: sha256sum shs-*.tar.gz > checksums-sha256.txt
 
       - name: Generate release notes
         run: |
@@ -106,4 +106,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --title "SHS CLI ${{ steps.version.outputs.version }}" \
             --notes-file notes.md \
-            shs_*.tar.gz checksums_sha256.txt
+            shs-*.tar.gz checksums-sha256.txt
