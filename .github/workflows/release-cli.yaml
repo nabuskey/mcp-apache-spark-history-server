@@ -36,20 +36,20 @@ jobs:
         id: version
         run: echo "version=${GITHUB_REF_NAME#cli/}" >> "$GITHUB_OUTPUT"
 
+      - name: Install Task
+        run: curl -sSL https://github.com/go-task/task/releases/download/v3.50.0/task_linux_amd64.tar.gz | tar xz -C /usr/local/bin task
+
       - name: Build
         working-directory: skills/cli
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: '0'
-        run: |
-          go build -trimpath \
-            -ldflags "-s -w -X github.com/kubeflow/mcp-apache-spark-history-server/skills/cli/cmd.cliVersion=${{ steps.version.outputs.version }}" \
-            -o shs .
+        run: task build VERSION=${{ steps.version.outputs.version }}
 
       - name: Archive
         working-directory: skills/cli
-        run: tar czf "shs-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" shs
+        run: tar czf "shs-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" -C bin shs
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
